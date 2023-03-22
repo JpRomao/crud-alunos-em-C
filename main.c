@@ -207,7 +207,7 @@ double calculateStudentFrequencyPercent(int watchedClasses)
 int calculateStudentStatus(StudentStatusParameters parameters)
 {
   double averageNote = (parameters.firstNote + parameters.secondNote) / 2;
-  int status = -1;
+  int status = 0;
   double studentFrequency = calculateStudentFrequencyPercent(parameters.watchedClasses);
 
   if (averageNote >= 6 && studentFrequency >= 75)
@@ -217,10 +217,6 @@ int calculateStudentStatus(StudentStatusParameters parameters)
   else if (averageNote < 6 && averageNote >= 3 && studentFrequency >= 75)
   {
     status = 1;
-  }
-  else
-  {
-    status = 0;
   }
 
   return status;
@@ -305,29 +301,6 @@ void filterRecoveryStudents(Student students[STUDENTS_QUANTITY])
   }
 }
 
-char *getStringfiedStatus(int status)
-{
-  char *stringfiedStatus;
-
-  switch (status)
-  {
-  case 0:
-    stringfiedStatus = "Reprovado";
-    break;
-  case 1:
-    stringfiedStatus = "Recuperacao";
-    break;
-  case 2:
-    stringfiedStatus = "Aprovado";
-    break;
-  default:
-    stringfiedStatus = "Nao definido";
-    break;
-  }
-
-  return stringfiedStatus;
-}
-
 void listStudents(Student students[STUDENTS_QUANTITY])
 {
   printf("Numero Aluno\tNota Bim. 1\tNota Bim. 2\tAulas Assistidas\tStatus\n");
@@ -339,15 +312,13 @@ void listStudents(Student students[STUDENTS_QUANTITY])
       continue;
     }
 
-    char *stringfiedStatus = getStringfiedStatus(students[i].status);
-
     printf(
         "%i\t\t%.2f\t\t%.2f\t\t%i\t\t\t%i\n",
         students[i].number,
         students[i].firstBimesterPoints,
         students[i].secondBimesterPoints,
         students[i].watchedClasses,
-        stringfiedStatus);
+        students[i].status);
   }
 }
 
