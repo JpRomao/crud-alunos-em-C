@@ -317,6 +317,29 @@ void filterRecoveryStudents(Student students[STUDENTS_QUANTITY])
   }
 }
 
+char *getStringfiedStudentStatus(int status)
+{
+  char *stringfiedStatus;
+
+  switch (status)
+  {
+  case 0:
+    stringfiedStatus = "Reprovado";
+    break;
+  case 1:
+    stringfiedStatus = "Recuperacao";
+    break;
+  case 2:
+    stringfiedStatus = "Aprovado";
+    break;
+  default:
+    stringfiedStatus = "Status invalido";
+    break;
+  }
+
+  return stringfiedStatus;
+}
+
 void listStudents(Student students[STUDENTS_QUANTITY])
 {
   printf("Numero Aluno\tNota Bim. 1\tNota Bim. 2\tAulas Assistidas\tStatus\n");
@@ -328,13 +351,15 @@ void listStudents(Student students[STUDENTS_QUANTITY])
       continue;
     }
 
+    char *stringfiedStatus = getStringfiedStudentStatus(students[i].status);
+
     printf(
-        "%i\t\t%.2f\t\t%.2f\t\t%i\t\t\t%i\n",
+        "%i\t\t%.2f\t\t%.2f\t\t%i\t\t\t%s\n",
         students[i].number,
         students[i].firstBimesterPoints,
         students[i].secondBimesterPoints,
         students[i].watchedClasses,
-        students[i].status);
+        stringfiedStatus);
   }
 }
 
