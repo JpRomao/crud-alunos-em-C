@@ -53,13 +53,13 @@ int inputStudentNumber()
 {
   int studentNumber = 0;
 
-  printf("Digite o número do aluno:");
+  printf("Digite o numero do aluno:");
   fflush(stdin);
   scanf("%i", &studentNumber);
 
   if (studentNumber == 0)
   {
-    printf("O número do aluno não pode ser 0. Digite novamente.\n");
+    printf("O numero do aluno nao pode ser 0. Digite novamente.\n");
 
     return inputStudentNumber();
   }
@@ -97,7 +97,7 @@ int inputStudentWatchedClasses()
   if (watchedClasses < 0 || watchedClasses > CLASSES_SPENT)
   {
     printf("Houve um erro na quantidade de aulas assistidas. Digite novamente!\n");
-    printf("Note que a quantidade de aulas não pode ser menor que zero e nem maior que %d", CLASSES_SPENT);
+    printf("Note que a quantidade de aulas nao pode ser menor que zero e nem maior que %d", CLASSES_SPENT);
 
     return inputStudentWatchedClasses();
   }
@@ -143,7 +143,7 @@ void updateStudent(Student students[STUDENTS_QUANTITY])
 
   if (!studentExists)
   {
-    printf("O número do aluno não existe, digite novamente!\n");
+    printf("O numero do aluno nao existe, digite novamente!\n");
 
     return updateStudent(students);
   }
@@ -173,7 +173,7 @@ void updateStudent(Student students[STUDENTS_QUANTITY])
 
     if (i == STUDENTS_QUANTITY)
     {
-      printf("O número do aluno não existe, digite novamente!\n");
+      printf("O numero do aluno nao existe, digite novamente!\n");
 
       studentNumber = inputStudentNumber();
 
@@ -233,14 +233,14 @@ void printMenu()
   printf("Gerenciamento de dados\n");
   printf("======================================\n\n");
 
-  printf("1.Listar todos os alunos\n");
-  printf("2.Listar alunos aprovados\n");
-  printf("3.Listar alunos em recuperação\n");
-  printf("4.Listar alunos reprovados\n");
-  printf("5.Incluir aluno\n");
-  printf("6.Alterar aluno\n");
-  printf("7.Eliminar aluno\n");
-  printf("8.Sair do programa\n");
+  printf("1. Listar todos os alunos\n");
+  printf("2. Listar alunos aprovados\n");
+  printf("3. Listar alunos em recuperacao\n");
+  printf("4. Listar alunos reprovados\n");
+  printf("5. Incluir aluno\n");
+  printf("6. Alterar aluno\n");
+  printf("7. Eliminar aluno\n");
+  printf("8. Sair do programa\n");
 }
 
 void filterApprovedStudents(Student students[STUDENTS_QUANTITY])
@@ -305,9 +305,32 @@ void filterRecoveryStudents(Student students[STUDENTS_QUANTITY])
   }
 }
 
+char *getStringfiedStatus(int status)
+{
+  char *stringfiedStatus;
+
+  switch (status)
+  {
+  case 0:
+    stringfiedStatus = "Reprovado";
+    break;
+  case 1:
+    stringfiedStatus = "Recuperacao";
+    break;
+  case 2:
+    stringfiedStatus = "Aprovado";
+    break;
+  default:
+    stringfiedStatus = "Nao definido";
+    break;
+  }
+
+  return stringfiedStatus;
+}
+
 void listStudents(Student students[STUDENTS_QUANTITY])
 {
-  printf("Número Aluno\tNota Bim. 1\tNota Bim. 2\tAulas Assistidas\tStatus\n");
+  printf("Numero Aluno\tNota Bim. 1\tNota Bim. 2\tAulas Assistidas\tStatus\n");
 
   for (int i = 0; i < STUDENTS_QUANTITY; i++)
   {
@@ -316,13 +339,15 @@ void listStudents(Student students[STUDENTS_QUANTITY])
       continue;
     }
 
+    char *stringfiedStatus = getStringfiedStatus(students[i].status);
+
     printf(
         "%i\t\t%.2f\t\t%.2f\t\t%i\t\t\t%i\n",
         students[i].number,
         students[i].firstBimesterPoints,
         students[i].secondBimesterPoints,
         students[i].watchedClasses,
-        students[i].status);
+        stringfiedStatus);
   }
 }
 
@@ -345,7 +370,7 @@ void createStudent(Student students[STUDENTS_QUANTITY])
 {
   if (arrayLength(students) == STUDENTS_QUANTITY)
   {
-    printf("Não há mais espaço para novos alunos");
+    printf("Nao há mais espaço para novos alunos");
     return;
   }
 
