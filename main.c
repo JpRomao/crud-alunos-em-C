@@ -249,6 +249,14 @@ void filterApprovedStudents(Student students[STUDENTS_QUANTITY])
     {
       approvedStudents[i] = students[i];
     }
+    else
+    {
+      approvedStudents[i].number = 0;
+      approvedStudents[i].firstBimesterPoints = 0.0;
+      approvedStudents[i].secondBimesterPoints = 0.0;
+      approvedStudents[i].watchedClasses = 0;
+      approvedStudents[i].status = 0;
+    }
   }
 
   for (int i = 0; i < STUDENTS_QUANTITY; i++)
@@ -266,6 +274,14 @@ void filterReprovedStudents(Student students[STUDENTS_QUANTITY])
     if (students[i].status == 0)
     {
       reprovedStudents[i] = students[i];
+    }
+    else
+    {
+      reprovedStudents[i].number = 0;
+      reprovedStudents[i].firstBimesterPoints = 0.0;
+      reprovedStudents[i].secondBimesterPoints = 0.0;
+      reprovedStudents[i].watchedClasses = 0;
+      reprovedStudents[i].status = 0;
     }
 
     for (int i = 0; i < STUDENTS_QUANTITY; i++)
@@ -287,11 +303,11 @@ void filterRecoveryStudents(Student students[STUDENTS_QUANTITY])
     }
     else
     {
-      recoveryStudents[i].firstBimesterPoints = 0.0;
       recoveryStudents[i].number = 0;
+      recoveryStudents[i].firstBimesterPoints = 0.0;
       recoveryStudents[i].secondBimesterPoints = 0.0;
       recoveryStudents[i].watchedClasses = 0;
-      recoveryStudents[i].status = -1;
+      recoveryStudents[i].status = 0;
     }
   }
 
@@ -307,7 +323,7 @@ void listStudents(Student students[STUDENTS_QUANTITY])
 
   for (int i = 0; i < STUDENTS_QUANTITY; i++)
   {
-    if (students[i].number <= 0 || students[i].status <= 0)
+    if (students[i].number <= 0 || students[i].status < 0 || students[i].status > 2)
     {
       continue;
     }
@@ -341,7 +357,7 @@ void createStudent(Student students[STUDENTS_QUANTITY])
 {
   if (arrayLength(students) == STUDENTS_QUANTITY)
   {
-    printf("Nao há mais espaço para novos alunos");
+    printf("Nao ha mais espaco para novos alunos");
     return;
   }
 
