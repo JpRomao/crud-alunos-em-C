@@ -426,8 +426,6 @@ char *getStringfiedStudentStatus(int status)
 
 void listStudents(Student students[STUDENTS_QUANTITY])
 {
-  orderArrayByName(students);
-
   printf("Numero Aluno\tNome Aluno\tNota Bim. 1\tNota Bim. 2\tAulas Assistidas\tStatus\n");
 
   for (int i = 0; i < STUDENTS_QUANTITY; i++)
@@ -560,8 +558,9 @@ char *getStringInLowerCase(char *str)
 {
   char *strLowerCase = (char *)malloc(strlen(str) + 1);
   strcpy(strLowerCase, str);
-  
-  for(int i = 0; str[i]; i++){
+
+  for (int i = 0; str[i]; i++)
+  {
     strLowerCase[i] = tolower(str[i]);
   }
 
@@ -600,7 +599,7 @@ void searchStudentLikeName(Student searchedStudents[STUDENTS_QUANTITY], Student 
   }
 }
 
-void chooseMenuOption(Student students[STUDENTS_QUANTITY])
+void chooseMenuOption(Student students[STUDENTS_QUANTITY], int isAlreadySorted)
 {
   printMenu();
 
@@ -616,12 +615,19 @@ void chooseMenuOption(Student students[STUDENTS_QUANTITY])
   Student approvedStudents[STUDENTS_QUANTITY];
   Student searchedStudents[STUDENTS_QUANTITY];
 
+  if (!isAlreadySorted)
+  {
+    orderArrayByName(students);
+
+    isAlreadySorted = 1;
+  }
+
   switch (option)
   {
   case 1:
     listStudents(students);
 
-    return chooseMenuOption(students);
+    return chooseMenuOption(students, isAlreadySorted);
     break;
   case 2:
     cloneStudentsArray(students, approvedStudents);
@@ -630,7 +636,7 @@ void chooseMenuOption(Student students[STUDENTS_QUANTITY])
 
     listStudents(approvedStudents);
 
-    return chooseMenuOption(students);
+    return chooseMenuOption(students, isAlreadySorted);
     break;
   case 3:
     cloneStudentsArray(students, recoveryStudents);
@@ -639,7 +645,7 @@ void chooseMenuOption(Student students[STUDENTS_QUANTITY])
 
     listStudents(recoveryStudents);
 
-    return chooseMenuOption(students);
+    return chooseMenuOption(students, isAlreadySorted);
     break;
   case 4:
     cloneStudentsArray(students, reprovedStudents);
@@ -648,35 +654,41 @@ void chooseMenuOption(Student students[STUDENTS_QUANTITY])
 
     listStudents(reprovedStudents);
 
-    return chooseMenuOption(students);
+    return chooseMenuOption(students, isAlreadySorted);
     break;
   case 5:
     searchStudentLikeName(searchedStudents, students);
 
     listStudents(searchedStudents);
 
-    return chooseMenuOption(students);
+    return chooseMenuOption(students, isAlreadySorted);
     break;
   case 6:
     createStudent(students);
 
-    return chooseMenuOption(students);
+    isAlreadySorted = 0;
+
+    return chooseMenuOption(students, isAlreadySorted);
     break;
   case 7:
     updateStudent(students);
 
-    return chooseMenuOption(students);
+    isAlreadySorted = 0;
+
+    return chooseMenuOption(students, isAlreadySorted);
     break;
   case 8:
     deleteStudent(students);
 
-    return chooseMenuOption(students);
+    isAlreadySorted = 1;
+
+    return chooseMenuOption(students, isAlreadySorted);
     break;
   case 9:
     return;
     break;
   default:
-    return chooseMenuOption(students);
+    return chooseMenuOption(students, isAlreadySorted);
   }
 }
 
@@ -685,6 +697,7 @@ int main()
   Student students[STUDENTS_QUANTITY];
 
   const char ENV[] = "development";
+  int isAlreadySorted = 0;
 
   if (strcmp(ENV, "development") == 0)
   {
@@ -695,7 +708,7 @@ int main()
     populateStudentArray(students);
   }
 
-  chooseMenuOption(students);
+  chooseMenuOption(students, isAlreadySorted);
 
   return 0;
 }
