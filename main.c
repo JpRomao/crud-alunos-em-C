@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
-#define STUDENTS_QUANTITY 2
+#define STUDENTS_QUANTITY 7
 #define CLASSES_SPENT 50
 #define MINIMUM_AVERAGE 6.0
 #define MINIMUM_CLASSES_SPENT_PERCENT 75.0
@@ -9,6 +10,7 @@
 typedef struct Student
 {
   int number;
+  char name[50];
   double firstBimesterPoints;
   double secondBimesterPoints;
   int status;
@@ -21,6 +23,41 @@ typedef struct StudentStatusParameters
   double secondNote;
   int watchedClasses;
 } StudentStatusParameters;
+
+void clearBuffer()
+{
+  while (getchar() != '\n' && getchar() != '\r')
+  {
+  }
+}
+
+void removeNewLineCharacter(char *string)
+{
+  string[strcspn(string, "\r\n")] = '\0';
+}
+
+double calculateStudentFrequencyPercent(int watchedClasses)
+{
+  return (watchedClasses * 100) / CLASSES_SPENT;
+}
+
+int calculateStudentStatus(StudentStatusParameters parameters)
+{
+  double averageNote = (parameters.firstNote + parameters.secondNote) / 2;
+  int status = 0;
+  double studentFrequency = calculateStudentFrequencyPercent(parameters.watchedClasses);
+
+  if (averageNote >= 6 && studentFrequency >= 75)
+  {
+    status = 2;
+  }
+  else if (averageNote < 6 && averageNote >= 3 && studentFrequency >= 75)
+  {
+    status = 1;
+  }
+
+  return status;
+}
 
 int checkIfStudentNumberAlreadyInUse(Student students[STUDENTS_QUANTITY], int studentNumber)
 {
@@ -54,8 +91,9 @@ int inputStudentNumber()
   int studentNumber = 0;
 
   printf("Digite o numero do aluno:");
-  fflush(stdin);
+
   scanf("%i", &studentNumber);
+  clearBuffer();
 
   if (studentNumber == 0)
   {
@@ -72,8 +110,9 @@ double inputStudentPoints()
   double studentPoints = 0.0;
 
   printf("Digite a nota do aluno:");
-  fflush(stdin);
+
   scanf("%lf", &studentPoints);
+  clearBuffer();
 
   if (studentPoints < 0.0 || studentPoints > 10.0)
   {
@@ -91,8 +130,9 @@ int inputStudentWatchedClasses()
   int watchedClasses = 0;
 
   printf("Digite a quantidade de aulas assistidas:");
-  fflush(stdin);
+
   scanf("%i", &watchedClasses);
+  clearBuffer();
 
   if (watchedClasses < 0 || watchedClasses > CLASSES_SPENT)
   {
@@ -103,6 +143,39 @@ int inputStudentWatchedClasses()
   }
 
   return watchedClasses;
+}
+
+char *inputStudentName()
+{
+  char *studentName = malloc(50 * sizeof(char));
+
+  printf("Digite o nome do aluno:");
+  fgets(studentName, 50, stdin);
+  removeNewLineCharacter(studentName);
+
+  return studentName;
+}
+
+Student studentFactory()
+{
+  Student student;
+
+  student.number = 0;
+  strcpy(student.name, "\0");
+  student.firstBimesterPoints = 0.0;
+  student.secondBimesterPoints = 0.0;
+  student.watchedClasses = 0;
+  student.status = -1;
+
+  return student;
+}
+
+void populateStudentArray(Student students[STUDENTS_QUANTITY])
+{
+  for (int i = 0; i < STUDENTS_QUANTITY; i++)
+  {
+    students[i] = studentFactory();
+  }
 }
 
 void cloneStudentsArray(Student students[STUDENTS_QUANTITY], Student clonedStudentsArray[STUDENTS_QUANTITY])
@@ -130,6 +203,38 @@ void orderArrayByNumberAscending(Student students[STUDENTS_QUANTITY])
         studentAux = students[i];
         students[i] = students[j];
         students[j] = studentAux;
+      }
+    }
+  }
+}
+
+void orderArrayByName(Student students[STUDENTS_QUANTITY])
+{
+  Student studentAux;
+
+  for (int i = 0; i < STUDENTS_QUANTITY - 1; i++)
+  {
+    for (int j = i + 1; j < STUDENTS_QUANTITY; j++)
+    {
+      char *studentName = students[i].name;
+      char *studentNameToCompare = students[j].name;
+
+      int isNameBigger = strcmp(studentName, studentNameToCompare);
+
+      if (isNameBigger > 0)
+      {
+        studentAux = students[i];
+        students[i] = students[j];
+        students[j] = studentAux;
+      }
+      else if (isNameBigger == 0)
+      {
+        if (students[i].number > students[j].number)
+        {
+          studentAux = students[i];
+          students[i] = students[j];
+          students[j] = studentAux;
+        }
       }
     }
   }
@@ -199,29 +304,6 @@ void deleteStudent(Student students[STUDENTS_QUANTITY])
   }
 }
 
-double calculateStudentFrequencyPercent(int watchedClasses)
-{
-  return (watchedClasses * 100) / CLASSES_SPENT;
-}
-
-int calculateStudentStatus(StudentStatusParameters parameters)
-{
-  double averageNote = (parameters.firstNote + parameters.secondNote) / 2;
-  int status = 0;
-  double studentFrequency = calculateStudentFrequencyPercent(parameters.watchedClasses);
-
-  if (averageNote >= 6 && studentFrequency >= 75)
-  {
-    status = 2;
-  }
-  else if (averageNote < 6 && averageNote >= 3 && studentFrequency >= 75)
-  {
-    status = 1;
-  }
-
-  return status;
-}
-
 void printMenu()
 {
   printf("\n\n");
@@ -233,10 +315,11 @@ void printMenu()
   printf("2. Listar alunos aprovados\n");
   printf("3. Listar alunos em recuperacao\n");
   printf("4. Listar alunos reprovados\n");
-  printf("5. Incluir aluno\n");
-  printf("6. Alterar aluno\n");
-  printf("7. Eliminar aluno\n");
-  printf("8. Sair do programa\n");
+  printf("5. Pesquisar alunos\n");
+  printf("6. Incluir aluno\n");
+  printf("7. Alterar aluno\n");
+  printf("8. Eliminar aluno\n");
+  printf("9. Sair do programa\n");
 }
 
 void filterApprovedStudents(Student students[STUDENTS_QUANTITY])
@@ -342,7 +425,9 @@ char *getStringfiedStudentStatus(int status)
 
 void listStudents(Student students[STUDENTS_QUANTITY])
 {
-  printf("Numero Aluno\tNota Bim. 1\tNota Bim. 2\tAulas Assistidas\tStatus\n");
+  orderArrayByName(students);
+
+  printf("Numero Aluno\tNome Aluno\tNota Bim. 1\tNota Bim. 2\tAulas Assistidas\tStatus\n");
 
   for (int i = 0; i < STUDENTS_QUANTITY; i++)
   {
@@ -354,8 +439,9 @@ void listStudents(Student students[STUDENTS_QUANTITY])
     char *stringfiedStatus = getStringfiedStudentStatus(students[i].status);
 
     printf(
-        "%i\t\t%.2f\t\t%.2f\t\t%i\t\t\t%s\n",
+        "%i\t\t%s\t\t%.2f\t\t%.2f\t\t%i\t\t\t%s\n",
         students[i].number,
+        students[i].name,
         students[i].firstBimesterPoints,
         students[i].secondBimesterPoints,
         students[i].watchedClasses,
@@ -388,6 +474,7 @@ void createStudent(Student students[STUDENTS_QUANTITY])
 
   Student newStudent;
   newStudent.number = generateRandomStudentNumber(students);
+  strcpy(newStudent.name, inputStudentName());
   newStudent.firstBimesterPoints = inputStudentPoints();
   newStudent.secondBimesterPoints = inputStudentPoints();
   newStudent.watchedClasses = inputStudentWatchedClasses();
@@ -400,33 +487,113 @@ void createStudent(Student students[STUDENTS_QUANTITY])
   newStudent.status =
       calculateStudentStatus(parameters);
 
-  int stop = 1;
+  int doesStudentInputed = 0;
   int i = 0;
 
-  while (stop)
+  while (!doesStudentInputed)
   {
     if (students[i].number == 0)
     {
       students[i] = newStudent;
 
-      stop = 0;
+      doesStudentInputed = 1;
     }
 
     i++;
   }
 }
 
-Student studentFactory()
+void populateStudentsArrayForTest(Student students[STUDENTS_QUANTITY])
 {
-  Student student;
+  students[0].number = 7;
+  strcpy(students[0].name, "Joao");
+  students[0].firstBimesterPoints = 10.0;
+  students[0].secondBimesterPoints = 10.0;
+  students[0].watchedClasses = 10;
+  students[0].status = 1;
 
-  student.number = 0;
-  student.firstBimesterPoints = 0.0;
-  student.secondBimesterPoints = 0.0;
-  student.watchedClasses = 0;
-  student.status = -1;
+  students[1].number = 2;
+  strcpy(students[1].name, "Maria");
+  students[1].firstBimesterPoints = 10.0;
+  students[1].secondBimesterPoints = 10.0;
+  students[1].watchedClasses = 10;
+  students[1].status = 0;
 
-  return student;
+  students[2].number = 3;
+  strcpy(students[2].name, "Jose");
+  students[2].firstBimesterPoints = 10.0;
+  students[2].secondBimesterPoints = 10.0;
+  students[2].watchedClasses = 10;
+  students[2].status = 0;
+
+  students[3].number = 4;
+  strcpy(students[3].name, "Pedro");
+  students[3].firstBimesterPoints = 10.0;
+  students[3].secondBimesterPoints = 10.0;
+  students[3].watchedClasses = 10;
+  students[3].status = 1;
+
+  students[4].number = 5;
+  strcpy(students[4].name, "Ana");
+  students[4].firstBimesterPoints = 10.0;
+  students[4].secondBimesterPoints = 10.0;
+  students[4].watchedClasses = 10;
+  students[4].status = 2;
+
+  students[5].number = 6;
+  strcpy(students[5].name, "Paulo");
+  students[5].firstBimesterPoints = 10.0;
+  students[5].secondBimesterPoints = 10.0;
+  students[5].watchedClasses = 10;
+  students[5].status = 2;
+
+  students[6].number = 1;
+  strcpy(students[6].name, "Joao");
+  students[6].firstBimesterPoints = 10.0;
+  students[6].secondBimesterPoints = 10.0;
+  students[6].watchedClasses = 10;
+  students[6].status = 2;
+}
+
+char *getStringInLowerCase(char *str)
+{
+  char *strLowerCase = (char *)malloc(strlen(str) + 1);
+  strcpy(strLowerCase, str);
+  strlwr(strLowerCase);
+
+  return strLowerCase;
+}
+
+void searchStudentLikeName(Student searchedStudents[STUDENTS_QUANTITY], Student students[STUDENTS_QUANTITY])
+{
+  populateStudentArray(searchedStudents);
+
+  char name[50];
+
+  printf("Digite o nome do aluno: ");
+  fgets(name, 50, stdin);
+  removeNewLineCharacter(name);
+
+  printf("\n");
+
+  printf("nome digitado: %s\n", name);
+
+  printf("\n");
+
+  char *nameLowerCase = getStringInLowerCase(name);
+
+  for (int j = 0, i = 0; j < STUDENTS_QUANTITY; j++)
+  {
+    if (strstr(getStringInLowerCase(students[j].name), nameLowerCase) != NULL)
+    {
+      searchedStudents[i] = students[j];
+      i++;
+    }
+    else
+    {
+      searchedStudents[j].number = 0;
+    }
+  }
 }
 
 void chooseMenuOption(Student students[STUDENTS_QUANTITY])
@@ -436,11 +603,14 @@ void chooseMenuOption(Student students[STUDENTS_QUANTITY])
   int option = 0;
 
   scanf("%i", &option);
+  clearBuffer();
+
   printf("\n\n");
 
   Student reprovedStudents[STUDENTS_QUANTITY];
   Student recoveryStudents[STUDENTS_QUANTITY];
   Student approvedStudents[STUDENTS_QUANTITY];
+  Student searchedStudents[STUDENTS_QUANTITY];
 
   switch (option)
   {
@@ -477,21 +647,28 @@ void chooseMenuOption(Student students[STUDENTS_QUANTITY])
     return chooseMenuOption(students);
     break;
   case 5:
-    createStudent(students);
+    searchStudentLikeName(searchedStudents, students);
+
+    listStudents(searchedStudents);
 
     return chooseMenuOption(students);
     break;
   case 6:
-    updateStudent(students);
+    createStudent(students);
 
     return chooseMenuOption(students);
     break;
   case 7:
-    deleteStudent(students);
+    updateStudent(students);
 
     return chooseMenuOption(students);
     break;
   case 8:
+    deleteStudent(students);
+
+    return chooseMenuOption(students);
+    break;
+  case 9:
     return;
     break;
   default:
@@ -499,19 +676,20 @@ void chooseMenuOption(Student students[STUDENTS_QUANTITY])
   }
 }
 
-void populateStudentArray(Student students[STUDENTS_QUANTITY])
-{
-  for (int i = 0; i < STUDENTS_QUANTITY; i++)
-  {
-    students[i] = studentFactory();
-  }
-}
-
 int main()
 {
   Student students[STUDENTS_QUANTITY];
 
-  populateStudentArray(students);
+  const char ENV[] = "development";
+
+  if (strcmp(ENV, "development") == 0)
+  {
+    populateStudentsArrayForTest(students);
+  }
+  else
+  {
+    populateStudentArray(students);
+  }
 
   chooseMenuOption(students);
 
