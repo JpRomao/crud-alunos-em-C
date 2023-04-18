@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #define STUDENTS_QUANTITY 7
 #define CLASSES_SPENT 50
@@ -559,7 +560,10 @@ char *getStringInLowerCase(char *str)
 {
   char *strLowerCase = (char *)malloc(strlen(str) + 1);
   strcpy(strLowerCase, str);
-  strlwr(strLowerCase);
+  
+  for(int i = 0; str[i]; i++){
+    strLowerCase[i] = tolower(str[i]);
+  }
 
   return strLowerCase;
 }
