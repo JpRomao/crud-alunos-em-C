@@ -8,8 +8,10 @@
 #define CLASSES_SPENT 50
 #define MINIMUM_AVERAGE 6.0
 #define MINIMUM_CLASSES_SPENT_PERCENT 75.0
+#define IS_TESTING_TIME_SPENT 1
 
 const char CODE_ENV[] = "development";
+
 int autoIncrementStudentNumber = 0;
 
 typedef struct Student
@@ -81,19 +83,19 @@ int generateRandomStudentNumber(Student students[STUDENTS_QUANTITY])
 {
   int studentNumber = 0;
 
-  if (strcmp(CODE_ENV, "development") == 0)
+  do
   {
-    studentNumber = ++autoIncrementStudentNumber;
-  }
-  else
-  {
-    do
-    {
-      studentNumber = rand() % STUDENTS_QUANTITY + 1;
-    } while (isStudentNumberInUse(students, studentNumber));
-  }
+    studentNumber = rand() % STUDENTS_QUANTITY + 1;
+  } while (isStudentNumberInUse(students, studentNumber));
 
   return studentNumber;
+}
+
+int autoIncrementedStudentNumber()
+{
+  autoIncrementStudentNumber++;
+
+  return autoIncrementStudentNumber;
 }
 
 int inputStudentNumber()
@@ -188,15 +190,15 @@ void populateStudentArray(Student students[STUDENTS_QUANTITY])
   }
 }
 
-void cloneStudentsArray(Student students[STUDENTS_QUANTITY], Student clonedStudentsArray[STUDENTS_QUANTITY])
+void cloneStudentsArray(Student students[STUDENTS_QUANTITY], Student clonedArray[STUDENTS_QUANTITY])
 {
   for (int i = 0; i < STUDENTS_QUANTITY; i++)
   {
-    clonedStudentsArray[i].number = students[i].number;
-    clonedStudentsArray[i].firstBimesterPoints = students[i].firstBimesterPoints;
-    clonedStudentsArray[i].secondBimesterPoints = students[i].secondBimesterPoints;
-    clonedStudentsArray[i].watchedClasses = students[i].watchedClasses;
-    clonedStudentsArray[i].status = students[i].status;
+    clonedArray[i].number = students[i].number;
+    clonedArray[i].firstBimesterPoints = students[i].firstBimesterPoints;
+    clonedArray[i].secondBimesterPoints = students[i].secondBimesterPoints;
+    clonedArray[i].watchedClasses = students[i].watchedClasses;
+    clonedArray[i].status = students[i].status;
   }
 }
 
@@ -216,6 +218,44 @@ void orderArrayByNumberAscending(Student students[STUDENTS_QUANTITY])
       }
     }
   }
+}
+
+clock_t orderArrayByNameBubbleSort(Student students[STUDENTS_QUANTITY])
+{
+  Student studentAux;
+
+  clock_t elapsedTime = clock();
+
+  for (int i = 0; i < STUDENTS_QUANTITY - 1; i++)
+  {
+    for (int j = 0; j < STUDENTS_QUANTITY - 1; j++)
+    {
+      char *studentName = students[j].name;
+      char *studentNameToCompare = students[j + 1].name;
+
+      int isNameBigger = strcmp(studentName, studentNameToCompare);
+
+      if (isNameBigger > 0)
+      {
+        studentAux = students[j];
+        students[j] = students[j + 1];
+        students[j + 1] = studentAux;
+      }
+      else if (isNameBigger == 0)
+      {
+        if (students[j].number > students[j + 1].number)
+        {
+          studentAux = students[j];
+          students[j] = students[j + 1];
+          students[j + 1] = studentAux;
+        }
+      }
+    }
+  }
+
+  elapsedTime = clock() - elapsedTime;
+
+  return elapsedTime;
 }
 
 clock_t orderArrayByName(Student students[STUDENTS_QUANTITY])
@@ -416,6 +456,21 @@ void filterRecoveryStudents(Student students[STUDENTS_QUANTITY])
   }
 }
 
+int arrayLength(Student students[STUDENTS_QUANTITY])
+{
+  int length = 0;
+
+  for (int i = 0; i < STUDENTS_QUANTITY; i++)
+  {
+    if (students[i].number != 0)
+    {
+      length++;
+    }
+  }
+
+  return length;
+}
+
 char *stringfyStatus(int status)
 {
   char *stringfiedStatus;
@@ -462,22 +517,9 @@ void listStudents(Student students[STUDENTS_QUANTITY])
         stringfiedStatus);
   }
 
-  printf("\nNumero de registros impressos: %d", arrayLength(students));
-}
+  int length = arrayLength(students);
 
-int arrayLength(Student students[STUDENTS_QUANTITY])
-{
-  int length = 0;
-
-  for (int i = 0; i < STUDENTS_QUANTITY; i++)
-  {
-    if (students[i].number != 0)
-    {
-      length++;
-    }
-  }
-
-  return length;
+  printf("\nNumero de registros impressos: %d\n", length);
 }
 
 void createStudent(Student students[STUDENTS_QUANTITY])
@@ -542,11 +584,11 @@ int generateRandomStudentWatchedClasses()
   return rand() % CLASSES_SPENT;
 }
 
-Student generateRandomStudent(Student students[STUDENTS_QUANTITY])
+Student generateRandomStudent()
 {
   Student randomDataStudent;
 
-  randomDataStudent.number = generateRandomStudentNumber(students);
+  randomDataStudent.number = autoIncrementedStudentNumber();
   strcpy(randomDataStudent.name, generateRandomStudentName(randomDataStudent.number));
   randomDataStudent.firstBimesterPoints = generateRandomStudentPoints();
   randomDataStudent.secondBimesterPoints = generateRandomStudentPoints();
@@ -620,6 +662,7 @@ void searchStudentLikeName(Student searchedStudents[STUDENTS_QUANTITY], Student 
 
 void chooseMenuOption(Student students[STUDENTS_QUANTITY], int isAlreadySorted)
 {
+  printf("Choose option");
   printMenu();
 
   int option = 0;
@@ -634,15 +677,18 @@ void chooseMenuOption(Student students[STUDENTS_QUANTITY], int isAlreadySorted)
   Student approvedStudents[STUDENTS_QUANTITY];
   Student searchedStudents[STUDENTS_QUANTITY];
 
-  clock_t elapsedTimeToOrderNames;
-
   if (!isAlreadySorted)
   {
-    elapsedTimeToOrderNames = orderArrayByName(students);
-
     if (strcmp(CODE_ENV, "development") == 0)
     {
-      printf("\nTempo de execucao do ordenamento por nome: %lf\n\n", ((double)elapsedTimeToOrderNames) / CLOCKS_PER_SEC);
+      Student arrayToTest[STUDENTS_QUANTITY];
+      cloneStudentsArray(students, arrayToTest);
+
+      clock_t timeSpentInOrderBubbleSort = orderArrayByNameBubbleSort(students);
+      clock_t timeSpentInOrderWithoutBubbleSort = orderArrayByName(arrayToTest);
+
+      printf("Tempo gasto para ordenar com bubble sort: %lf\n", ((double)timeSpentInOrderBubbleSort) / CLOCKS_PER_SEC);
+      printf("Tempo gasto para ordenar sem bubble sort: %lf\n", ((double)timeSpentInOrderWithoutBubbleSort) / CLOCKS_PER_SEC);
     }
 
     isAlreadySorted = 1;
@@ -724,7 +770,7 @@ int main()
 
   int isAlreadySorted = 0;
 
-  if (strcmp(CODE_ENV, "development") == 0)
+  if (strcmp(CODE_ENV, "development") == 0 || IS_TESTING_TIME_SPENT)
   {
     populateStudentsArrayForTest(students);
   }
