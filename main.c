@@ -2,11 +2,15 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <time.h>
 
-#define STUDENTS_QUANTITY 7
+#define STUDENTS_QUANTITY 10000
 #define CLASSES_SPENT 50
 #define MINIMUM_AVERAGE 6.0
 #define MINIMUM_CLASSES_SPENT_PERCENT 75.0
+
+const char CODE_ENV[] = "development";
+int autoIncrementStudentNumber = 0;
 
 typedef struct Student
 {
@@ -60,29 +64,34 @@ int calculateStudentStatus(StudentStatusParameters parameters)
   return status;
 }
 
-int checkIfStudentNumberAlreadyInUse(Student students[STUDENTS_QUANTITY], int studentNumber)
+int isStudentNumberInUse(Student students[STUDENTS_QUANTITY], int studentNumber)
 {
-  int exists = 0;
-
   for (int i = 0; i < STUDENTS_QUANTITY; i++)
   {
     if (students[i].number == studentNumber)
     {
-      exists = 1;
+      return 1;
     }
   }
 
-  return exists;
+  return 0;
 }
 
 int generateRandomStudentNumber(Student students[STUDENTS_QUANTITY])
 {
   int studentNumber = 0;
 
-  do
+  if (strcmp(CODE_ENV, "development") == 0)
   {
-    studentNumber = rand() % 10000;
-  } while (checkIfStudentNumberAlreadyInUse(students, studentNumber));
+    studentNumber = ++autoIncrementStudentNumber;
+  }
+  else
+  {
+    do
+    {
+      studentNumber = rand() % STUDENTS_QUANTITY + 1;
+    } while (isStudentNumberInUse(students, studentNumber));
+  }
 
   return studentNumber;
 }
@@ -209,9 +218,11 @@ void orderArrayByNumberAscending(Student students[STUDENTS_QUANTITY])
   }
 }
 
-void orderArrayByName(Student students[STUDENTS_QUANTITY])
+clock_t orderArrayByName(Student students[STUDENTS_QUANTITY])
 {
   Student studentAux;
+
+  clock_t elapsedTime = clock();
 
   for (int i = 0; i < STUDENTS_QUANTITY - 1; i++)
   {
@@ -239,13 +250,17 @@ void orderArrayByName(Student students[STUDENTS_QUANTITY])
       }
     }
   }
+
+  elapsedTime = clock() - elapsedTime;
+
+  return elapsedTime;
 }
 
 void updateStudent(Student students[STUDENTS_QUANTITY])
 {
   int studentNumber = inputStudentNumber();
 
-  int studentExists = checkIfStudentNumberAlreadyInUse(students, studentNumber);
+  int studentExists = isStudentNumberInUse(students, studentNumber);
 
   if (!studentExists)
   {
@@ -401,7 +416,7 @@ void filterRecoveryStudents(Student students[STUDENTS_QUANTITY])
   }
 }
 
-char *getStringfiedStudentStatus(int status)
+char *stringfyStatus(int status)
 {
   char *stringfiedStatus;
 
@@ -435,7 +450,7 @@ void listStudents(Student students[STUDENTS_QUANTITY])
       continue;
     }
 
-    char *stringfiedStatus = getStringfiedStudentStatus(students[i].status);
+    char *stringfiedStatus = stringfyStatus(students[i].status);
 
     printf(
         "%i\t\t%s\t\t%.2f\t\t%.2f\t\t%i\t\t\t%s\n",
@@ -446,6 +461,8 @@ void listStudents(Student students[STUDENTS_QUANTITY])
         students[i].watchedClasses,
         stringfiedStatus);
   }
+
+  printf("\nNumero de registros impressos: %d", arrayLength(students));
 }
 
 int arrayLength(Student students[STUDENTS_QUANTITY])
@@ -465,7 +482,7 @@ int arrayLength(Student students[STUDENTS_QUANTITY])
 
 void createStudent(Student students[STUDENTS_QUANTITY])
 {
-  if (arrayLength(students) == STUDENTS_QUANTITY)
+  if (arrayLength(students) >= STUDENTS_QUANTITY)
   {
     printf("Nao ha mais espaco para novos alunos");
     return;
@@ -502,56 +519,58 @@ void createStudent(Student students[STUDENTS_QUANTITY])
   }
 }
 
+char *generateRandomStudentName(int studentNumber)
+{
+  char *studentName = (char *)malloc(sizeof(char) * 50);
+
+  char *studentNumberString = (char *)malloc(sizeof(char) * 10);
+  sprintf(studentNumberString, "%d", studentNumber);
+
+  strcpy(studentName, "Aluno ");
+  strcat(studentName, studentNumberString);
+
+  return studentName;
+}
+
+int generateRandomStudentPoints()
+{
+  return rand() % 10;
+}
+
+int generateRandomStudentWatchedClasses()
+{
+  return rand() % CLASSES_SPENT;
+}
+
+Student generateRandomStudent(Student students[STUDENTS_QUANTITY])
+{
+  Student randomDataStudent;
+
+  randomDataStudent.number = generateRandomStudentNumber(students);
+  strcpy(randomDataStudent.name, generateRandomStudentName(randomDataStudent.number));
+  randomDataStudent.firstBimesterPoints = generateRandomStudentPoints();
+  randomDataStudent.secondBimesterPoints = generateRandomStudentPoints();
+  randomDataStudent.watchedClasses = generateRandomStudentWatchedClasses();
+
+  StudentStatusParameters parameters;
+  parameters.firstNote = randomDataStudent.firstBimesterPoints;
+  parameters.secondNote = randomDataStudent.secondBimesterPoints;
+  parameters.watchedClasses = randomDataStudent.watchedClasses;
+
+  randomDataStudent.status =
+      calculateStudentStatus(parameters);
+
+  return randomDataStudent;
+}
+
 void populateStudentsArrayForTest(Student students[STUDENTS_QUANTITY])
 {
-  students[0].number = 7;
-  strcpy(students[0].name, "Joao");
-  students[0].firstBimesterPoints = 10.0;
-  students[0].secondBimesterPoints = 10.0;
-  students[0].watchedClasses = 10;
-  students[0].status = 1;
+  printf("Generating random students...\n");
 
-  students[1].number = 2;
-  strcpy(students[1].name, "Maria");
-  students[1].firstBimesterPoints = 10.0;
-  students[1].secondBimesterPoints = 10.0;
-  students[1].watchedClasses = 10;
-  students[1].status = 0;
-
-  students[2].number = 3;
-  strcpy(students[2].name, "Jose");
-  students[2].firstBimesterPoints = 10.0;
-  students[2].secondBimesterPoints = 10.0;
-  students[2].watchedClasses = 10;
-  students[2].status = 0;
-
-  students[3].number = 4;
-  strcpy(students[3].name, "Pedro");
-  students[3].firstBimesterPoints = 10.0;
-  students[3].secondBimesterPoints = 10.0;
-  students[3].watchedClasses = 10;
-  students[3].status = 1;
-
-  students[4].number = 5;
-  strcpy(students[4].name, "Ana");
-  students[4].firstBimesterPoints = 10.0;
-  students[4].secondBimesterPoints = 10.0;
-  students[4].watchedClasses = 10;
-  students[4].status = 2;
-
-  students[5].number = 6;
-  strcpy(students[5].name, "Paulo");
-  students[5].firstBimesterPoints = 10.0;
-  students[5].secondBimesterPoints = 10.0;
-  students[5].watchedClasses = 10;
-  students[5].status = 2;
-
-  students[6].number = 1;
-  strcpy(students[6].name, "Joao");
-  students[6].firstBimesterPoints = 10.0;
-  students[6].secondBimesterPoints = 10.0;
-  students[6].watchedClasses = 10;
-  students[6].status = 2;
+  for (int i = 0; i < STUDENTS_QUANTITY; i++)
+  {
+    students[i] = generateRandomStudent(students);
+  }
 }
 
 char *getStringInLowerCase(char *str)
@@ -615,9 +634,16 @@ void chooseMenuOption(Student students[STUDENTS_QUANTITY], int isAlreadySorted)
   Student approvedStudents[STUDENTS_QUANTITY];
   Student searchedStudents[STUDENTS_QUANTITY];
 
+  clock_t elapsedTimeToOrderNames;
+
   if (!isAlreadySorted)
   {
-    orderArrayByName(students);
+    elapsedTimeToOrderNames = orderArrayByName(students);
+
+    if (strcmp(CODE_ENV, "development") == 0)
+    {
+      printf("\nTempo de execucao do ordenamento por nome: %lf\n\n", ((double)elapsedTimeToOrderNames) / CLOCKS_PER_SEC);
+    }
 
     isAlreadySorted = 1;
   }
@@ -696,10 +722,9 @@ int main()
 {
   Student students[STUDENTS_QUANTITY];
 
-  const char ENV[] = "development";
   int isAlreadySorted = 0;
 
-  if (strcmp(ENV, "development") == 0)
+  if (strcmp(CODE_ENV, "development") == 0)
   {
     populateStudentsArrayForTest(students);
   }
