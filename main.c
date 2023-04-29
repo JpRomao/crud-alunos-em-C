@@ -439,6 +439,21 @@ char *stringfyStatus(int status)
   return stringfiedStatus;
 }
 
+int arrayLength(Student students[STUDENTS_QUANTITY])
+{
+  int length = 0;
+
+  for (int i = 0; i < STUDENTS_QUANTITY; i++)
+  {
+    if (students[i].number != 0)
+    {
+      length++;
+    }
+  }
+
+  return length;
+}
+
 void listStudents(Student students[STUDENTS_QUANTITY])
 {
   printf("Numero Aluno\tNome Aluno\tNota Bim. 1\tNota Bim. 2\tAulas Assistidas\tStatus\n");
@@ -463,21 +478,6 @@ void listStudents(Student students[STUDENTS_QUANTITY])
   }
 
   printf("\nNumero de registros impressos: %d", arrayLength(students));
-}
-
-int arrayLength(Student students[STUDENTS_QUANTITY])
-{
-  int length = 0;
-
-  for (int i = 0; i < STUDENTS_QUANTITY; i++)
-  {
-    if (students[i].number != 0)
-    {
-      length++;
-    }
-  }
-
-  return length;
 }
 
 void createStudent(Student students[STUDENTS_QUANTITY])
